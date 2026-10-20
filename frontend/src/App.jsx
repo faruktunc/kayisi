@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { api } from './api/client.js'
 import SimulatorPage from './pages/SimulatorPage.jsx'
 import LiteraturePage from './pages/LiteraturePage.jsx'
 import DesignComparisonPage from './pages/DesignComparisonPage.jsx'
 import RunTablePage from './pages/RunTablePage.jsx'
 import AssumptionsPage from './pages/AssumptionsPage.jsx'
+
+// three.js ağır; ana arayüzü bekletmesin diye ayrı parça olarak sonradan yüklenir
+const ApricotBackground = lazy(() => import('./components/ApricotBackground.jsx'))
 
 const TABS = [
   { key: 'simulator', label: 'Simülatör' },
@@ -53,6 +56,9 @@ export default function App() {
 
   return (
     <div className="app">
+      <Suspense fallback={null}>
+        <ApricotBackground />
+      </Suspense>
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark" aria-hidden>◐</span>

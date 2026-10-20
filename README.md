@@ -129,3 +129,14 @@ D-optimal desenlere 4 merkez tekrarı eklenir; optimal noktalar bu tekrarlar bil
 Diğer çıktılar:
 - **Yanlış uygun oranı:** Modelin SO₂ < limit dediği ama gerçekte limitin üstünde kalan optimumların oranı.
 - **Yanıt bazında normalleştirilmiş RMSE.**
+
+## Üçüncü taraf içerik
+
+Arka plandaki 3D kayısı modeli (`frontend/public/models/apricot_cut.glb`):
+
+- **"Apricot fresh and cutted off fruit with leaf"**, HQ3DMOD. Bilgi, modelle gelen `info.json` dosyasından alınmıştır; lisans bilgisi dosyada yoktur.
+- Dokular `tools/optimize_gltf.py` ile 4096 px'ten 1024 px'e küçültülüp tek GLB'ye paketlenmiştir:
+
+```bash
+backend/.venv/bin/python tools/optimize_gltf.py <model.gltf> frontend/public/models/apricot_cut.glb
+```
