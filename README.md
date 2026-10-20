@@ -20,6 +20,8 @@ Gereken tek şey Docker ya da Podman. Script, çalışan bir Docker daemon'u var
 PORT=9090 ./calistir.sh    # başka bir portta çalıştırır (ACMA=0 tarayıcıyı açmaz)
 ```
 
+**Windows'ta çalıştırma ve ngrok ile internetten paylaşma:** [docs/windows-ngrok.md](docs/windows-ngrok.md)
+
 **İnternetsiz bir makineye taşımak için:**
 
 ```bash
@@ -34,7 +36,7 @@ PORT=9090 ./calistir.sh    # başka bir portta çalıştırır (ACMA=0 tarayıc�
 
 Konteyner root olmayan bir kullanıcıyla çalışır ve sağlık kontrolü `/api/health` üzerinden yapılır. Ayarlanabilir ortam değişkenleri: `WEB_WORKERS` (2), `WEB_THREADS` (4), `WEB_TIMEOUT` (300 sn).
 
-Windows'ta script WSL ya da Git Bash içinden çalıştırılabilir. Alternatif olarak doğrudan şu komutlar kullanılabilir:
+Windows'ta script WSL ya da Git Bash içinden çalıştırılabilir (ayrıntılar: [docs/windows-ngrok.md](docs/windows-ngrok.md)). Alternatif olarak doğrudan şu komutlar kullanılabilir:
 
 ```bash
 docker build -t kayisi-simulator . && docker run -d -p 8080:8000 kayisi-simulator

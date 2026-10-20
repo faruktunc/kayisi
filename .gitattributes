@@ -1,0 +1,4 @@
+# Windows'ta Git'in CRLF'e çevirmesi bash scriptlerini bozar
+*.sh        text eol=lf
+Dockerfile  text eol=lf
+*.glb       binary

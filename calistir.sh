@@ -83,7 +83,8 @@ open_browser() {
   [ "${ACMA:-1}" = "0" ] && return 0
   if command -v xdg-open >/dev/null 2>&1; then xdg-open "$url" >/dev/null 2>&1 &
   elif command -v open >/dev/null 2>&1; then open "$url"
-  elif command -v cmd.exe >/dev/null 2>&1; then cmd.exe /c start "$url" >/dev/null 2>&1
+  # Windows (Git Bash / WSL): Git Bash '/c' gibi argümanları yola çevirebildiği için cmd.exe yerine explorer.exe
+  elif command -v explorer.exe >/dev/null 2>&1; then explorer.exe "$url" >/dev/null 2>&1 || true
   fi
 }
 
