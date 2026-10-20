@@ -19,6 +19,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     MPLBACKEND=Agg \
     MPLCONFIGDIR=/app/.mplcache \
     FRONTEND_DIST=/app/frontend \
+    # PDF'lerdeki tarih/saat Türkiye saatiyle yazılsın (varsayılan UTC olurdu)
+    TZ=Europe/Istanbul \
     PORT=8000
 
 WORKDIR /app
