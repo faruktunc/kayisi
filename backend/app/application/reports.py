@@ -152,7 +152,8 @@ class ReportService:
 
         rep.heading("Ayarlar")
         rep.key_values(_settings_pairs(settings, goals) + [
-            ("Monte Carlo tekrarı", str(result.get("n_reps"))),
+            ("Monte Carlo tekrarı", f"{result.get('n_reps')} (her desen, ölçüm hatası eklenerek sanal "
+                                    "laboratuvarda bu kadar kez denendi)"),
             ("Log dönüşümü (SO₂, süreler)", "Evet" if result.get("log_transform") else "Hayır"),
             ("Senaryolar", ", ".join(s["scenario"]["label"] for s in result["scenarios"])),
             ("Karşılaştırılan desen sayısı", str(len(result["ranking"]))),

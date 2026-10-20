@@ -115,7 +115,8 @@ export default function DesignComparisonPage({ meta, settings, setSettings, goal
                 <input type="number" min={0.1} step={0.5} value={goals.w_dE}
                   onChange={(e) => setGoals({ ...goals, w_dE: Number(e.target.value) })} />
               </label>
-              <label>Monte Carlo tekrarı
+              <label style={{ gridColumn: '1 / -1' }}>
+                <span>Monte Carlo tekrarı <span className="small">(her desen, ölçüm hatası eklenerek sanal laboratuvarda bu kadar kez denenir; arttıkça sonuç kararlılaşır, hesap uzar)</span></span>
                 <select value={nReps} onChange={(e) => setNReps(Number(e.target.value))}>
                   {[50, 100, 200, 500].map((n) => <option key={n} value={n}>{n}</option>)}
                 </select>
