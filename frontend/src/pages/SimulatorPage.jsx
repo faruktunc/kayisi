@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { api } from '../api/client.js'
 import { ErrorNote, FactorSlider, Section, SettingsBar, Stat } from '../components/common.jsx'
@@ -33,7 +33,10 @@ export default function SimulatorPage({ meta, settings, setSettings, goals, over
   const [pdfLoading, setPdfLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const request = useDebounced({ point, settings, overrides, goals })
+  // Nesne yalnızca girdiler değişince yeniden kurulur; her render'da yeni nesne
+  // verilirse debounce her seferinde tetiklenir ve sonsuz istek döngüsü oluşur
+  const inputs = useMemo(() => ({ point, settings, overrides, goals }), [point, settings, overrides, goals])
+  const request = useDebounced(inputs)
 
   useEffect(() => {
     api.simulate(request).then(setResult).then(() => setError(null)).catch((e) => setError(e.message))

@@ -14,6 +14,13 @@ class Goals:
     w_L: float = 1.0
     w_dE: float = 1.0
 
+    def __post_init__(self):
+        weights = (self.w_so2, self.w_time, self.w_L, self.w_dE)
+        if any(w < 0 for w in weights) or sum(weights) <= 0:
+            raise ValueError("Ağırlıklar negatif olamaz ve en az biri 0'dan büyük olmalı")
+        if self.so2_limit <= 0 or self.so2_shape <= 0:
+            raise ValueError("SO₂ limiti ve düşüş dikliği pozitif olmalı")
+
     def to_dict(self) -> dict:
         return asdict(self)
 
@@ -57,5 +64,6 @@ def desirability(r: dict, goals: Goals, anchors: Anchors) -> dict:
     # Ağırlıklı geometrik ortalama; bir istenirlik 0 ise toplam 0
     with np.errstate(divide="ignore"):
         D = np.exp((ws[:, None] * np.log(np.maximum(ds, 1e-300))).sum(0) / ws.sum())
-    D = np.where(np.any(ds <= 0, axis=0), 0.0, D)
+    # Ağırlığı 0 olan yanıt yok sayılır; ağırlıklı bir yanıtın istenirliği 0 ise toplam 0 olur
+    D = np.where(np.any(ds[ws > 0] <= 0, axis=0), 0.0, D)
     return {"D": D, "d_so2": d_so2, "d_time": d_time, "d_L": d_L, "d_dE": d_dE}

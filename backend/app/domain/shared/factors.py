@@ -68,5 +68,15 @@ def natural_to_coded(natural: np.ndarray) -> np.ndarray:
 
 
 def natural_from_mapping(values: dict) -> np.ndarray:
-    """{'so2_initial': 4500, ...} -> (1, 6) gerçek birim satırı. Eksik anahtar merkez değeri alır."""
-    return np.array([[float(values.get(f.key, f.center)) for f in FACTORS]])
+    """{'so2_initial': 4500, ...} -> (1, 6) gerçek birim satırı. Eksik anahtar merkez değeri alır.
+    Model yalnızca tasarım aralığında tanımlıdır; aralık dışı değer ValueError verir."""
+    unknown = set(values) - set(FACTOR_KEYS)
+    if unknown:
+        raise ValueError(f"Bilinmeyen faktör: {', '.join(sorted(unknown))}")
+    row = []
+    for f in FACTORS:
+        v = float(values.get(f.key, f.center))
+        if not f.low <= v <= f.high:
+            raise ValueError(f"{f.label} {f.low}–{f.high} {f.unit} aralığında olmalı (verilen: {v:g})")
+        row.append(v)
+    return np.array([row])

@@ -5,7 +5,7 @@ from app.domain.design import generators as g
 from app.domain.design.catalog import DESIGN_SPECS
 from app.domain.design.criteria import design_criteria
 from app.domain.design.model_matrix import cube_moment_matrix, model_matrix
-from app.domain.evaluation.desirability import Goals
+from app.domain.evaluation.desirability import Goals, desirability
 from app.domain.evaluation.monte_carlo import TruthReference, evaluate_design
 from app.domain.process.model import ModelParameters, ProcessSettings, ProcessSimulator
 from app.domain.shared.factors import FACTORS, coded_to_natural, natural_to_coded
@@ -93,3 +93,35 @@ def test_monte_carlo_regret_is_small_for_good_design_and_nonnegative():
     poor = evaluate_design(DESIGN_SPECS["lhs_30"].builder(), sim, st, goals, truth, n_reps=30)
     assert good["regret_mean"] >= 0
     assert good["regret_mean"] < poor["regret_mean"]
+
+
+def test_calibration_reports_reduction_r2_below_ppm_r2():
+    import json
+    from app.domain.literature.model import Observation, calibrate_so2_kinetics
+    obs = [Observation(**o) for o in json.load(open("data/literature.json", encoding="utf-8"))["observations"]]
+    fit = calibrate_so2_kinetics(obs, include_interaction=False)
+    # ppm R²'si başlangıç SO₂ yüzünden şişkindir; azalma oranı R²'si daha düşük ve dürüst ölçüdür
+    assert fit.r2_reduction_pooled < fit.r2_so2
+    assert fit.r2_no_reduction_baseline > 0.5
+
+
+def test_zero_weight_response_is_ignored():
+    from app.domain.evaluation.desirability import Anchors
+    r = {"so2_final": np.array([1500.0]), "total_time": np.array([5.0]),
+         "color_L": np.array([40.0]), "color_dE": np.array([3.0])}
+    anchors = Anchors(so2_max=5000, time_min=1, time_max=10, L_min=40, L_max=50, dE_min=1, dE_max=10)
+    # L* = L_min -> d_L = 0; ağırlığı 0 ise toplamı sıfırlamamalı
+    assert desirability(r, Goals(w_L=0.0), anchors)["D"][0] > 0
+    assert desirability(r, Goals(w_L=1.0), anchors)["D"][0] == 0
+
+
+@pytest.mark.parametrize("goals", [dict(w_so2=0, w_time=0, w_L=0, w_dE=0), dict(w_time=-1), dict(so2_limit=0)])
+def test_invalid_goals_rejected(goals):
+    with pytest.raises(ValueError):
+        Goals(**goals)
+
+
+def test_equilibrium_moisture_above_target_rejected():
+    sim = ProcessSimulator(ModelParameters(moisture_equilibrium=25))
+    with pytest.raises(ValueError):
+        sim.run(coded_to_natural(np.zeros((1, 6))), ProcessSettings(target_moisture=22))

@@ -26,19 +26,26 @@ export default function LiteraturePage() {
           <Stat label="b (sıcaklık, 1/°C)" value={fmt(f.b_temp, 4)} />
           <Stat label="m (başlangıç SO₂ etkisi)" value={fmt(f.m_initial, 2)}
             hint="Yüksek başlangıç SO₂ → oransal azalma düşük" />
-          <Stat label="R² (SO₂)" value={fmt(f.r2_so2, 3)} />
-          <Stat label="R² (ln k)" value={fmt(f.r2_ln_k, 3)} />
-          <Stat label="RMSE" value={fmt(f.rmse_so2, 0)} unit="ppm" />
+          <Stat label="R² (azalma oranı)" value={fmt(f.r2_reduction_pooled, 2)}
+            hint={`Simülatörün kullandığı ortalama model; çalışma etkisiyle ${fmt(f.r2_reduction, 2)}`} />
+          <Stat label="Azalma hatası (RMSE)" value={`±${fmt(f.rmse_reduction_pooled, 1)}`} unit="puan"
+            hint="SO₂ azalma yüzdesindeki ortalama hata" />
+          <Stat label="R² (SO₂, ppm)" value={fmt(f.r2_so2, 2)}
+            hint={`Yanıltıcı derecede yüksek: hiç azalma olmasa bile ${fmt(f.r2_no_reduction_baseline, 2)}`} />
           <Stat label="Gözlem" value={f.n_obs} />
         </div>
         <p className="muted small">
           Çalışma/çeşit etkileri (ln k): {Object.entries(f.group_effects).map(([g, v]) => `${GROUP_LABELS[g] ?? g}: ${fmt(v, 2)}`).join(' · ')}.
-          Simülatör ortalama grubu kullanır. Sıcaklık etkisi literatürde zayıf ve tutarsızdır (b küçük);
+          Simülatör ortalama grubu kullanır. Çalışmalar arasındaki fark büyüktür: en hızlı ve en yavaş grup
+          arasında hız sabiti ~{fmt(Math.exp(Math.max(...Object.values(f.group_effects)) - Math.min(...Object.values(f.group_effects))), 1)} kat
+          fark eder. Bu yüzden SO₂ tahminleri belirsizdir; özellikle yüksek başlangıç SO₂'de 2000 ppm'in altına inilip
+          inilemeyeceği, hangi çalışmanın kinetiğinin gerçeğe yakın olduğuna bağlıdır. Sıcaklık etkisi zayıftır (b küçük);
           başlangıç SO₂ düzeyi en güçlü belirleyicidir.
         </p>
       </Section>
 
-      <Section title="Gözlenen ve tahmin edilen SO₂" subtitle="Köşegene yakın noktalar iyi uyumu gösterir.">
+      <Section title="Gözlenen ve tahmin edilen SO₂"
+        subtitle="Tahmin, simülatörün kullandığı ortalama modelle (çalışma etkisi olmadan). Köşegene yakın noktalar iyi uyumu gösterir.">
         <div className="chart">
           <ResponsiveContainer width="100%" height={380}>
             <ScatterChart margin={{ top: 10, right: 30, bottom: 30, left: 20 }}>
@@ -66,13 +73,13 @@ export default function LiteraturePage() {
         <div className="table-wrap tall">
           <table>
             <thead>
-              <tr><th>Örnek</th><th>Grup</th><th>H₂O₂ (%)</th><th>Sıcaklık (°C)</th><th>Süre (dk)</th><th>Başlangıç SO₂</th><th>Gözlenen</th><th>Tahmin</th></tr>
+              <tr><th>Örnek</th><th>Grup</th><th>H₂O₂ (%)</th><th>Sıcaklık (°C)</th><th>Süre (dk)</th><th>Başlangıç SO₂</th><th>Gözlenen</th><th>Tahmin (simülatör)</th><th>Tahmin (çalışma etkisiyle)</th></tr>
             </thead>
             <tbody>
               {data.observations.map((o) => (
                 <tr key={o.sample}>
                   <td>{o.sample}</td><td>{GROUP_LABELS[o.group]}</td><td>{fmt(o.h2o2_conc, 1)}</td><td>{o.temp}</td><td>{o.time}</td>
-                  <td>{fmt(o.so2_initial, 0)}</td><td>{fmt(o.so2, 0)}{o.sd ? ` ± ${o.sd}` : ''}</td><td>{fmt(o.predicted, 0)}</td>
+                  <td>{fmt(o.so2_initial, 0)}</td><td>{fmt(o.so2, 0)}{o.sd ? ` ± ${o.sd}` : ''}</td><td>{fmt(o.predicted, 0)}</td><td>{fmt(o.predicted_with_group, 0)}</td>
                 </tr>
               ))}
             </tbody>

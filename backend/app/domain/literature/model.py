@@ -48,7 +48,13 @@ class So2KineticFit:
     m_initial: float
     group_effects: dict
     r2_ln_k: float
+    # SO₂ ppm üzerindeki R² yanıltıcı biçimde yüksektir (başlangıç SO₂'nin kendisi
+    # bile ~0,58 verir). Kinetiğin gerçek açıklayıcılığı azalma oranındaki R²'dir.
     r2_so2: float
+    r2_reduction: float            # çalışma etkisiyle
+    r2_reduction_pooled: float     # simülatörün kullandığı ortalama grup (etki = 0)
+    rmse_reduction_pooled: float   # azalma oranı, yüzde puanı
+    r2_no_reduction_baseline: float  # SO₂ = SO₂₀ kabulünün ppm R²'si (karşılaştırma için)
     rmse_so2: float
     n_obs: int
 
@@ -87,6 +93,15 @@ def calibrate_so2_kinetics(observations: list[Observation], include_interaction:
     s_hat = s0 * np.exp(-k_hat * t)
     r2_so2 = 1 - np.sum((s_obs - s_hat) ** 2) / np.sum((s_obs - s_obs.mean()) ** 2)
 
+    def r2(a, b):
+        return float(1 - np.sum((a - b) ** 2) / np.sum((a - a.mean()) ** 2))
+
+    red_obs = 1 - s_obs / s0
+    red_hat = 1 - s_hat / s0
+    X_pooled = X.copy()
+    X_pooled[:, 5:] = 0.0
+    red_pooled = 1 - np.exp(-np.exp(X_pooled @ beta) * t)
+
     effects = {g: float(beta[5 + i]) for i, g in enumerate(groups[:-1])}
     effects[groups[-1]] = float(-sum(effects.values()))
     return So2KineticFit(
@@ -98,18 +113,24 @@ def calibrate_so2_kinetics(observations: list[Observation], include_interaction:
         group_effects=effects,
         r2_ln_k=float(r2_ln_k),
         r2_so2=float(r2_so2),
+        r2_reduction=r2(red_obs, red_hat),
+        r2_reduction_pooled=r2(red_obs, red_pooled),
+        rmse_reduction_pooled=float(100 * np.sqrt(np.mean((red_obs - red_pooled) ** 2))),
+        r2_no_reduction_baseline=r2(s_obs, s0),
         rmse_so2=float(np.sqrt(np.mean((s_obs - s_hat) ** 2))),
         n_obs=len(observations),
     )
 
 
-def predict_observations(fit: So2KineticFit, observations: list[Observation], use_group_effect: bool = True) -> list[dict]:
-    """Gözlenen ve model tahmini SO₂ değerlerini yan yana döndürür (kalibrasyon grafiği için)."""
+def predict_observations(fit: So2KineticFit, observations: list[Observation]) -> list[dict]:
+    """Gözlenen ve tahmin edilen SO₂ (kalibrasyon grafiği için).
+    predicted: simülatörün kullandığı ortalama grupla (çalışma etkisi = 0)
+    predicted_with_group: kendi çalışmasının etkisiyle"""
+    coef = np.array([fit.ln_k0, fit.a_conc, fit.b_temp, fit.c_conc_temp, fit.m_initial])
     out = []
     for o in observations:
-        row = np.array(_design_row(o.h2o2_conc, o.temp, o.so2_initial))
-        coef = np.array([fit.ln_k0, fit.a_conc, fit.b_temp, fit.c_conc_temp, fit.m_initial])
-        ln_k = row @ coef + (fit.group_effects.get(o.group, 0.0) if use_group_effect else 0.0)
-        pred = o.so2_initial * np.exp(-np.exp(ln_k) * o.time)
-        out.append({**asdict(o), "predicted": float(pred)})
+        ln_k = np.array(_design_row(o.h2o2_conc, o.temp, o.so2_initial)) @ coef
+        pred = lambda lk: float(o.so2_initial * np.exp(-np.exp(lk) * o.time))
+        out.append({**asdict(o), "predicted": pred(ln_k),
+                    "predicted_with_group": pred(ln_k + fit.group_effects.get(o.group, 0.0))})
     return out

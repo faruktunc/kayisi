@@ -151,6 +151,10 @@ class ProcessSimulator:
     def run(self, natural: np.ndarray, settings: ProcessSettings) -> dict:
         """Gürültüsüz ('gerçek') proses yanıtları."""
         p = self.params
+        if p.moisture_equilibrium >= settings.target_moisture:
+            raise ValueError("Denge nemi hedef nemden küçük olmalı; aksi halde ürün hedef neme hiç inemez")
+        if not p.moisture_in < p.moisture_saturation:
+            raise ValueError("Gelen ürün nemi, çözeltideki doygunluk neminden küçük olmalı")
         X = np.atleast_2d(np.asarray(natural, dtype=float))
         s0, conc, t_dip, T_dip, T_dry, P = X.T
 

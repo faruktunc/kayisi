@@ -65,3 +65,16 @@ def test_run_sheet_conditions(client):
     assert ok.status_code == 200 and ok.data.startswith(b"%PDF")
     assert client.get("/api/designs/ccd_half/pdf?pressure_mode=x").status_code == 400
     assert client.get("/api/designs/ccd_half/pdf?n_applications=9").status_code == 400
+
+
+@pytest.mark.parametrize("point", [{"h2o2_conc": 0}, {"vacuum_pressure": 0}, {"so2_initial": 0},
+                                   {"h2o2_time": -5}, {"dry_temp": 500}, {"bilinmeyen": 1}])
+def test_out_of_range_point_returns_400(client, point):
+    r = client.post("/api/simulate", json={"point": point})
+    assert r.status_code == 400 and "error" in r.get_json()
+
+
+def test_invalid_goals_and_overrides_return_400(client):
+    zero = {"w_so2": 0, "w_time": 0, "w_L": 0, "w_dE": 0}
+    assert client.post("/api/evaluate", json={"designs": ["bbd"], "n_reps": 20, "goals": zero}).status_code == 400
+    assert client.post("/api/simulate", json={"overrides": {"moisture_equilibrium": 25}}).status_code == 400

@@ -106,13 +106,14 @@ POST gövdelerinde ortak alanlar şunlardır:
 
 | Bölüm | Kaynak | Model |
 |---|---|---|
-| H₂O₂ aşamasında SO₂ | **Literatür** (63 gözlem, R² = 0,93) | `SO₂ = SO₂₀·exp(−k·t)`, `ln k = ln k₀ + a·ln C + b·(T−25) − m·ln(SO₂₀/4500)` |
+| H₂O₂ aşamasında SO₂ | **Literatür** (63 gözlem; azalma oranında R² ≈ 0,41, hata ±12 puan) | `SO₂ = SO₂₀·exp(−k·t)`, `ln k = ln k₀ + a·ln C + b·(T−25) − m·ln(SO₂₀/4500)` |
 | H₂O₂ aşamasında su alımı | Varsayım | Doygunluk nemine üstel yaklaşım |
 | Vakumlu kurutma | Varsayım | Page modeli, Arrhenius × (480/P)^β; **hedef neme kadar**, süre yanıttır |
 | Kurutmada SO₂ | Varsayım | Isıl kayıp + su kaybından gelen derişme (ppm yaş baz) |
 | Renk (L\*, a\*, b\*, ΔE) | Varsayım | Esmerleşme kinetiği, kalan SO₂ koruyucu etki yapar; ΔE ticari kükürtlü ürüne göre |
 
 - Başlangıç SO₂ etkisi partinin bir özelliği olarak alınır: ardışık uygulamalarda hız sabiti değişmez.
+- **Kalibrasyonun sınırı:** SO₂ ppm üzerindeki R² (~0,93) yanıltıcı derecede yüksektir; hiç azalma olmadığını varsayan model bile ~0,58 verir. Kinetiğin asıl açıklayıcılığı azalma oranındaki R²'dir (~0,41). Çalışmalar arasında hız sabiti ~3 kat fark eder (Özkan & Cemeroğlu hızlı, Uğur & Erdoğan H serisi yavaş). Simülatör ortalamayı kullanır. Bu nedenle mutlak SO₂ tahminleri, özellikle "2000 ppm'in altına inilebilir mi?" sorusu, belirsizdir.
 - Vakum basıncı **mutlak basınç** olarak yorumlanmıştır. Gösterge (vakum) değeri kastediliyorsa düzeltilmelidir.
 - Varsayım parametrelerinin hepsi arayüzdeki "Model varsayımları" sekmesinden değiştirilebilir.
 
