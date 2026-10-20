@@ -109,8 +109,14 @@ export default function SimulatorPage({ meta, settings, setSettings, goals, over
                   hint="≤ 3 gözle zor ayırt edilir" />
               </div>
               <div className="swatches">
-                <div><div className="swatch" style={{ background: refHex }} /><span>Referans (ticari kükürtlü)</span></div>
-                <div><div className="swatch" style={{ background: labToHex(result.color_L, result.color_a, result.color_b) }} /><span>Simüle ürün</span></div>
+                <div>
+                  <div className="swatch" style={{ background: refHex }} />
+                  <span>Referans (ticari kükürtlü) <span className="muted">({labText(p.color_ref_L, p.color_ref_a, p.color_ref_b)})</span></span>
+                </div>
+                <div>
+                  <div className="swatch" style={{ background: labToHex(result.color_L, result.color_a, result.color_b) }} />
+                  <span>Simüle ürün <span className="muted">({labText(result.color_L, result.color_a, result.color_b)})</span></span>
+                </div>
               </div>
             </>
           )}
@@ -159,6 +165,8 @@ export default function SimulatorPage({ meta, settings, setSettings, goals, over
     </div>
   )
 }
+
+const labText = (L, a, b) => `L* ${fmt(L, 1)} · a* ${fmt(a, 1)} · b* ${fmt(b, 1)}`
 
 export function OptimumTable({ meta, optimum, goals, onApply }) {
   const controllable = meta.factors.slice(1)
